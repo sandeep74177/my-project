@@ -1,27 +1,47 @@
 import { useState } from "react";
 
 // step --2  make a square function for change the value of square in the board
-function Square() {
+function Square({value, onSquareClick}) {
 
   // step 6-- remove the prop and add a usestate for store the value
   
-  const [value,setValue]=useState(null);
+  // const [value,setValue]=useState(null);   // step-8 remove usestate from square
   
   // step--5
-  function handleClick(){
-    setValue('x');
-  }
+  // function handleClick(){     //step-9 cmnt this also
+  //   setValue('x');
+  // }
   return (
 
     // step--4 paases a prop value
     <button 
-    onClick={handleClick}
+   onClick={onSquareClick}
     className="text-3xl w-20 h-20 border-2 border-gray-500">{value}</button>
   );
 }
 
 // step --1
 export default function Board() {
+
+  const [xIsnext,setXIsnext]=useState(true)
+  const [squares,setSquares]=useState(Array(9).fill(null))    // step-7 create an array for each square
+
+  function handleClick(i){
+    if(squares[i]){
+      return;
+    }
+    const nextSquares=squares.slice();
+    if(xIsnext){
+      nextSquares[i]='x';
+
+    }
+    else{
+      nextSquares[i]='0'
+    }
+      setSquares(nextSquares);
+      setXIsnext(!xIsnext);
+
+  }
   return (
     <>
       <div className="m-20 w-fit border-4 border-gray-600 rounded-lg p-4 shadow-lg">
@@ -30,19 +50,19 @@ export default function Board() {
          
               
               {/* step--3 reusable of Square code */}
-          <Square  />
-          <Square />
-          <Square />
+          <Square value={squares[0]} onSquareClick={()=>handleClick(0)} />
+          <Square value={squares[1]} onSquareClick={()=>handleClick(1)} />
+          <Square value={squares[2]} onSquareClick={()=>handleClick(2)}/>
         </div>
         <div className="flex">
-          <Square />
-          <Square />
-          <Square />
+          <Square value={squares[3]} onSquareClick={()=>handleClick(3)}/>
+          <Square value={squares[4]} onSquareClick={()=>handleClick(4)}/>
+          <Square value={squares[5]} onSquareClick={()=>handleClick(5)}/>
         </div>
         <div className="flex">
-          <Square/>
-          <Square />
-          <Square />
+          <Square value={squares[6]} onSquareClick={()=>handleClick(6)}/>
+          <Square value={squares[7]} onSquareClick={()=>handleClick(7)}/>
+          <Square value={squares[8]} onSquareClick={()=>handleClick(8)}/>
         </div>
       </div>
     </>
