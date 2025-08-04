@@ -1,100 +1,97 @@
+
 import { useState } from "react";
 
-// step --2  make a square function for change the value of square in the board
 function Square({ value, onSquareClick }) {
-  // step 6-- remove the prop and add a usestate for store the value
-
-  // const [value,setValue]=useState(null);   // step-8 remove usestate from square
-
-  // step--5
-  // function handleClick(){     //step-9 cmnt this also
-  //   setValue('x');
-  // }
   return (
-    // step--4 paases a prop value
     <button
       onClick={onSquareClick}
-      className="text-3xl w-20 h-20 border-2 border-gray-500">
+      className="text-3xl w-20 h-20 border-2 border-gray-500 flex items-center justify-center hover:bg-gray-200 transition"
+    >
       {value}
     </button>
   );
 }
 
-// step --1
-export default function Board() {
-  const [xIsnext, setXIsnext] = useState(true);  //for fill out the squares
-  const [squares, setSquares] = useState(Array(9).fill(null)); // step-7 create an array for each square
-
+function Board({ xIsNext, squares, onPlay }) {
   function handleClick(i) {
-    if (squares[i] || calculateWinner(squares)) {
-      return;
-    }
+    if (calculateWinner(squares) || squares[i]) return;
+
     const nextSquares = squares.slice();
-    if (xIsnext) {
-      nextSquares[i] = "x";
-    } else {
-      nextSquares[i] = "0";
-    }
-    setSquares(nextSquares);
-    setXIsnext(!xIsnext);
+    nextSquares[i] = xIsNext ? "x" : "0";
+    onPlay(nextSquares);
   }
 
-
-const winner=calculateWinner(squares);
-let  status;
-  if(winner){
-    status='Winner is  : '+ winner;
-
-  }
-  else{
-    status= 'Next Player : ' +(xIsnext? 'x' :'0')
-  }
+  const winner = calculateWinner(squares);
+  const status = winner
+    ? `🎉 Winner: ${winner}`
+    : `Next Player: ${xIsNext ? "x" : "0"}`;
 
   return (
-    <>
-    <div className="m-20 text-3xl">{status}</div>
-      <div className="m-20 w-fit border-4 border-gray-600 rounded-lg p-4 shadow-lg">
-        <div className="flex">
-          {/* <button className="text-3xl w-20 h-20 border-2 border-gray-500">1</button> */}
-
-          {/* step--3 reusable of Square code */}
-          <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
-          <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
-          <Square value={squares[2]} onSquareClick={() => handleClick(2)} />
-        </div>
-        <div className="flex">
-          <Square value={squares[3]} onSquareClick={() => handleClick(3)} />
-          <Square value={squares[4]} onSquareClick={() => handleClick(4)} />
-          <Square value={squares[5]} onSquareClick={() => handleClick(5)} />
-        </div>
-        <div className="flex">
-          <Square value={squares[6]} onSquareClick={() => handleClick(6)} />
-          <Square value={squares[7]} onSquareClick={() => handleClick(7)} />
-          <Square value={squares[8]} onSquareClick={() => handleClick(8)} />
+    <div className="text-center">
+      <div className="text-2xl font-semibold mb-4">{status}</div>
+      <div className="inline-block border-4 border-gray-600 rounded-lg p-4 shadow-lg">
+        <div className="grid grid-cols-3 gap-2">
+          {squares.map((value, i) => (
+            <Square key={i} value={value} onSquareClick={() => handleClick(i)} />
+          ))}
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
-function calculateWinner(squares){
-  const lines=[
-    [0,1,2]
-    ,[3,4,5]
-    ,[6,7,8]
-    ,[0,3,6]
-    ,[1,4,7]
-    ,[2,5,8]
-    ,[0,4,8]
-    ,[2,4,6]
+function calculateWinner(squares) {
+  const lines = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+    [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+    [0, 4, 8], [2, 4, 6],            // diagonals
   ];
-
-  for (let i=0; i<lines.length;i++){
-    const [a,b,c]=lines[i];
-    if(squares[a] && squares[a] === squares[b] && squares[a]=== squares[c]){
+  for (let [a, b, c] of lines) {
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
       return squares[a];
     }
   }
-
+  return null;
 }
-// step 7-- remove all the props value from 9 squares
+
+export default function Game() {
+  const [history, setHistory] = useState([Array(9).fill(null)]);
+  const [currentMove, setCurrentMove] = useState(0);
+  const xIsNext = currentMove % 2 === 0;
+  const currentSquares = history[currentMove];
+
+  function handlePlay(nextSquares) {
+    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length - 1);
+  }
+
+  function jumpTo(nextMove) {
+    setCurrentMove(nextMove);
+  }
+
+  const moves = history.map((_, move) => {
+    const description = move === 0 ? "Go to game start" : `Go to move #${move}`;
+    return (
+      <li key={move}>
+        <button
+          className="mb-2 px-4 py-1 border border-blue-400 rounded hover:bg-blue-100 transition"
+          onClick={() => jumpTo(move)}
+        >
+          {description}
+        </button>
+      </li>
+    );
+  });
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center py-10 px-4">
+      <h1 className="text-4xl font-bold mb-10">Tic Tac Toe 🕹️</h1>
+      <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+      <div className="mt-10">
+        <h2 className="text-xl font-medium mb-2">Game History</h2>
+        <ol className="space-y-1">{moves}</ol>
+      </div>
+    </div>
+  );
+}
